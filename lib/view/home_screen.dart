@@ -4,15 +4,19 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:news_app/model/news_headline_model.dart';
 import 'package:news_app/view/categories_screen.dart';
+import 'package:news_app/view/login_screen.dart';
 import 'package:news_app/view/news_article_screen.dart';
 import 'package:news_app/view/profile_screen.dart';
+
 import 'package:news_app/view_model/news_view_model.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:standard_searchbar/new/standard_icons.dart';
+
 import '../model/categories_model.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final String username;
+
+  const HomeScreen({Key? key, required this.username}) : super(key: key);
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -26,6 +30,8 @@ class _HomeScreenState extends State<HomeScreen> {
   final format = DateFormat('MMMM dd, yyyy');
   String name = 'bbc-news';
 
+  get username => widget.username;
+
   @override
   Widget build(BuildContext context) {
     final height = MediaQuery.of(context).size.height;
@@ -33,7 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('News'),
+        title: const Text('News Headlines'),
         leading: IconButton(
           onPressed: () {
             Navigator.push(
@@ -41,9 +47,9 @@ class _HomeScreenState extends State<HomeScreen> {
               MaterialPageRoute(builder: (context) => const CategoriesScreen()),
             );
           },
-          icon: const Icon(Icons.category_rounded),
+          icon: const Icon(Icons.list_rounded),
         ),
-        actions: [
+        actions: <Widget>[
           PopupMenuButton<FilterList>(
             initialValue: selectedMenu,
             icon: const Icon(Icons.more_vert, color: Colors.black),
@@ -74,9 +80,19 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
+          IconButton(
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginScreen()),
+              );
+            },
+            icon: const Icon(Icons.logout_outlined),
+          ),
         ],
       ),
       body: SingleChildScrollView(
+
         child: Column(
           children: [
             // News Headlines Section
@@ -97,7 +113,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       style: const TextStyle(color: Colors.red),
                     ),
                   );
-                } else if (snapshot.hasData &&
+                } else
+                  if (snapshot.hasData &&
                     snapshot.data!.articles != null &&
                     snapshot.data!.articles!.isNotEmpty) {
                   return SizedBox(
@@ -139,8 +156,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             );
                           },
                           child: Padding(
-                            padding: EdgeInsets.all(
-                                 8.0),
+                            padding: const EdgeInsets.all(8.0),
                             child: Stack(
                               alignment: Alignment.bottomCenter,
                               children: [
@@ -192,8 +208,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                           children: [
                                             Flexible(
                                               child: Text(
-                                                snapshot.data!.articles![index]
-                                                    .source?.name ??
+                                                snapshot.data!
+                                                    .articles![index].source
+                                                    ?.name ??
                                                     '',
                                                 maxLines: 1,
                                                 overflow: TextOverflow.ellipsis,
@@ -265,75 +282,78 @@ class _HomeScreenState extends State<HomeScreen> {
                             snapshot.data!.articles![index].publishedAt ?? '',
                           );
                           return InkWell(
-                              onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => NewsArticleScreen(
-                                  image: snapshot
-                                      .data!.articles![index].urlToImage ??
-                                      '',
-                                  title: snapshot
-                                      .data!.articles![index].title ??
-                                      'No Title',
-                                  date: format.format(dataTime),
-                                  author: snapshot
-                                      .data!.articles![index].author ??
-                                      'Unknown Author',
-                                  details: snapshot
-                                      .data!.articles![index].description ??
-                                      'No Description',
-                                  content: snapshot
-                                      .data!.articles![index].content ??
-                                      'No Content',
-                                  source: snapshot
-                                      .data!.articles![index].source?.name ??
-                                      'Unknown Source',
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => NewsArticleScreen(
+                                    image: snapshot
+                                        .data!.articles![index].urlToImage ??
+                                        '',
+                                    title: snapshot
+                                        .data!.articles![index].title ??
+                                        'No Title',
+                                    date: format.format(dataTime),
+                                    author: snapshot
+                                        .data!.articles![index].author ??
+                                        'Unknown Author',
+                                    details: snapshot
+                                        .data!.articles![index].description ??
+                                        'No Description',
+                                    content: snapshot
+                                        .data!.articles![index].content ??
+                                        'No Content',
+                                    source: snapshot
+                                        .data!.articles![index].source?.name ??
+                                        'Unknown Source',
+                                  ),
                                 ),
-                              ),
-                            );
-                          },
-                            child: Padding(
-                            padding: const EdgeInsets.only(bottom: 4),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                              );
+                            },
+                            child: Stack(
+                              alignment: Alignment.bottomCenter,
                               children: [
-                                CachedNetworkImage(
-                                  imageUrl: snapshot
-                                      .data!.articles![index].urlToImage ??
-                                      '',
-                                  fit: BoxFit.cover,
-                                  placeholder: (context, url) =>
-                                  const SpinKitCircle(
-                                    size: 40,
-                                    color: Colors.grey,
-                                  ),
-                                  errorWidget: (context, url, error) =>
-                                  const Icon(
-                                    Icons.error_outline,
-                                    color: Colors.red,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  snapshot.data!.articles![index].title ??
-                                      "No Title",
-                                  style: GoogleFonts.aBeeZee(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
+                                SizedBox(
+                                  height: height * 0.2,
+                                  child: CachedNetworkImage(
+                                    imageUrl: snapshot
+                                        .data!.articles![index].urlToImage ??
+                                        '',
+                                    fit: BoxFit.cover,
+                                    placeholder: (context, url) =>
+                                    const SpinKitCircle(
+                                      size: 40,
+                                      color: Colors.grey,
+                                    ),
+                                    errorWidget: (context, url, error) =>
+                                    const Icon(
+                                      Icons.error_outline,
+                                      color: Colors.red,
+                                    ),
                                   ),
                                 ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  format.format(dataTime),
-                                  style: GoogleFonts.aBeeZee(
-                                    fontSize: 12,
-                                    color: Colors.grey,
+                                Positioned(
+                                  bottom: 0,
+                                  child: Container(
+                                    width: width * 0.9,
+                                    padding: const EdgeInsets.all(12),
+                                    color: Colors.black.withOpacity(0.5),
+                                    child: Text(
+                                      snapshot.data!.articles![index].title
+                                          ?.toString() ??
+                                          '',
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.white,
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ],
                             ),
-                            )
                           );
                         },
                       ),
@@ -341,13 +361,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                 } else {
                   return const Center(
-                    child: Text("No articles available."),
+                    child: Text('No data available'),
                   );
                 }
               },
-
             ),
-
           ],
         ),
       ),
@@ -355,12 +373,13 @@ class _HomeScreenState extends State<HomeScreen> {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const ProfileScreen()),
+            MaterialPageRoute(
+              builder: (context) => ProfileScreen(username: widget.username),
+            ),
           );
         },
-        child: const Icon(Icons.people),
+        child: const Icon(Icons.person_outline),
       ),
-
     );
   }
 }

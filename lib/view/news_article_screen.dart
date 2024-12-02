@@ -34,14 +34,14 @@ class _NewsArticleScreenState extends State<NewsArticleScreen> {
   @override
   void initState() {
     super.initState();
-    // Parse the date string using the specified format
+
     try {
       dateTime = displayFormat.parse(widget.date);
     } catch (e) {
       print("Error parsing date: $e");
-      dateTime = DateTime.now(); // Fallback in case of an error
+      dateTime = DateTime.now();
     }
-    print(widget.details); // Example of accessing the widget's properties
+    print(widget.details);
   }
 
   @override
@@ -69,11 +69,7 @@ class _NewsArticleScreenState extends State<NewsArticleScreen> {
           Container(
             height: Kheight * 0.45,
             width: Kwidth,
-            child: ClipRRect(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(30),
-                topRight: Radius.circular(30),
-              ),
+            child: SizedBox(
               child: CachedNetworkImage(
                 imageUrl: widget.image,
                 fit: BoxFit.cover,

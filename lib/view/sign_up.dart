@@ -1,124 +1,137 @@
 import 'package:flutter/material.dart';
+import '../controller/database_connection.dart';
 
 class SignUp extends StatefulWidget {
-  const SignUp({super.key});
+  const SignUp({Key? key}) : super(key: key);
 
   @override
   State<SignUp> createState() => _SignUpState();
 }
 
 class _SignUpState extends State<SignUp> {
-  final username = TextEditingController();
-  final password = TextEditingController();
-  final confirmPassword = TextEditingController();
+  final usernameController = TextEditingController();
+  final passwordController = TextEditingController();
+  final confirmPasswordController = TextEditingController();
+  final emailController = TextEditingController();
 
-  final formkey = GlobalKey<FormState>();
+  final formKey = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-
+        title: const Text('Sign Up'),
       ),
-      body: Column(
-        children: [
-          Text("Register Now"),
-          Center(
-            child: Column(
-              children: [
-                const SizedBox( height: 100),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      color: Colors.pinkAccent.withOpacity(.3),
-                    ),
-                    child: Form(
-                      key: formkey,
-                      child: TextFormField(
-                        controller: username,
-                        validator: (value) {if(value!.isEmpty){
-                          return "username is required";
-                        }
-                        return null;
-                        },
-                        decoration: const InputDecoration(
-                          icon: Icon(Icons.person_3),
-                          border: InputBorder.none,
-                          label: Text("Username"),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text(
+                'Sign up now',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: usernameController,
+                decoration: const InputDecoration(
+                  labelText: 'Username',
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a username';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: emailController,
+                decoration: const InputDecoration(
+                  labelText: 'Email',
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter an email';
+                  }
+                  if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+                    return 'Please enter a valid email';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                obscureText: true,
+                controller: passwordController,
+                decoration: const InputDecoration(
+                  labelText: 'Password',
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a password';
+                  }
+                  if (value.length < 6) {
+                    return 'Password must be at least 6 characters';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                obscureText: true,
+                controller: confirmPasswordController,
+                decoration: const InputDecoration(
+                  labelText: 'Confirm Password',
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please confirm your password';
+                  }
+                  if (value != passwordController.text) {
+                    return 'Passwords do not match';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 32),
+              ElevatedButton(
+                onPressed: () async {
+                  if (formKey.currentState!.validate()) {
+                    final username = usernameController.text;
+                    final email = emailController.text;
+                    final password = passwordController.text;
+
+                    final success = await DatabaseConnection.signUp(
+                      username,
+                      email,
+                      password,
+                    );
+
+                    if (success) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Sign up successful!'),
                         ),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      color: Colors.pinkAccent.withOpacity(.3),
-                    ),
-                    child: TextFormField(
-                      controller: password,
-                      validator: (value) {if(value!.isEmpty){
-                        return "password is required";
-                      }
-                      return null;
-                      },
-                      obscureText: true,
-                      decoration: const InputDecoration(
-                        icon: Icon(Icons.lock),
-                        border: InputBorder.none,
-                        label: Text("Password"),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      color: Colors.pinkAccent.withOpacity(.3),
-                    ),
-                    child: TextFormField(
-                      controller: password,
-                      validator: (value) {if(value!.isEmpty){
-                        return "password is required";
-                      }
-                      return null;
-                      },
-                      obscureText: true,
-                      decoration: const InputDecoration(
-                        icon: Icon(Icons.lock),
-                        border: InputBorder.none,
-                        label: Text("Password"),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox( height: 20),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: ElevatedButton(
-                    onPressed: () {
-                      if(formkey.currentState!.validate()){
-                        //login here
-                      }
-                    },
-                    child: const Text("Register"),
-                  ),
-                ),
-
-
-              ],
-            ),
+                      );
+                      Navigator.pushReplacementNamed(context, '/home');
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('User already exists.'),
+                        ),
+                      );
+                    }
+                  }
+                },
+                child: const Text('Sign Up'),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 }
-
